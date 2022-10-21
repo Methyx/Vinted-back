@@ -25,6 +25,7 @@ router.post(
       const { title, description, price, condition, city, brand, size, color } =
         req.body;
       const pictureUser = req.files?.picture; // conditonnal chaining : ne plante pas si la clé req.files est 'null'
+      // console.log(Array.isArray(pictureUser));
       // exclusions
       if (!title || typeof title !== "string" || title.length > 50) {
         return res.status(400).json({ message: "title is not correct" });
@@ -41,17 +42,29 @@ router.post(
       }
       // creation de l'offre 'vide' pour avoir l'id
       const newOffer = new Offer({});
-      // traitement de l'image
-      let imageCloudinary = null;
+      // traitement des images
+      let pictureTab = []; // le tableau des images reçues
+      const cloudinaryTab = []; // le tableau des liens Cloudinary des images
       if (pictureUser) {
+        if (!Array.isArray(pictureUser)) {
+          // on crée un tableau d'images, même si on a récupéré qu'une image
+          pictureTab.push(pictureUser);
+        } else {
+          pictureTab = pictureUser;
+        }
+        // on charge chaque image dans Cloudinary, dans un repertoire dédié à l'offre
         const folder = "/vinted/offers/" + newOffer._id;
-        imageCloudinary = await cloudinary.uploader.upload(
-          convertToBase64(pictureUser),
-          (options = { folder: folder })
-        );
-      } else {
-        imageCloudinary = "No Picture";
+        pictureTab.forEach(async (file) => {
+          cloudinaryTab.push(
+            await cloudinary.uploader.upload(
+              convertToBase64(file),
+              (options = { folder: folder })
+            )
+          );
+        });
       }
+
+      console.log(cloudinaryTab);
       // sauvegarde de l'annonce
       newOffer.product_name = title;
       newOffer.product_description = description;
@@ -63,7 +76,7 @@ router.post(
         { COULEUR: color },
         { TAILLE: size },
       ];
-      newOffer.product_image = imageCloudinary;
+      newOffer.product_image = cloudinaryTab;
       newOffer.owner = user; // on stocke tout l'user ici (pour la réponse), mais en BDD on aura que l'id compte tenu du modele
       await newOffer.save();
       // reponse

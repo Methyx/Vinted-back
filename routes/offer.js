@@ -120,9 +120,20 @@ router.delete("/offer/delete", isAuthenticated, async (req, res) => {
       return res.status(400).json({ message: "offer not found" });
     }
     // suppression de l'image
-    const PicturePublicId = offer.product_image.public_id;
-    if (PicturePublicId) {
-      await cloudinary.uploader.destroy(PicturePublicId); // image
+    if (offer.product_image) {
+      let imageTab = [];
+      // gestion des offres créées AVANT de déclarer product_image en Array dans le modele
+      if (!Array.isArray(offer.product_image)) {
+        imageTab = [offer.product_image];
+      } else {
+        imageTab = offer.product_image;
+      }
+      for (let i = 0; i < imageTab.length; i++) {
+        const PicturePublicId = imageTab[i].public_id;
+        if (PicturePublicId) {
+          await cloudinary.uploader.destroy(PicturePublicId); // image
+        }
+      }
       const folder = "/vinted/offers/" + offer._id;
       await cloudinary.api.delete_folder(folder); // repertoire
     }

@@ -54,17 +54,31 @@ router.post(
         }
         // on charge chaque image dans Cloudinary, dans un repertoire dédié à l'offre
         const folder = "/vinted/offers/" + newOffer._id;
-        pictureTab.forEach(async (file) => {
+
+        for (let i = 0; i < pictureTab.length; i++) {
           cloudinaryTab.push(
             await cloudinary.uploader.upload(
-              convertToBase64(file),
+              convertToBase64(pictureTab[i]),
               (options = { folder: folder })
             )
           );
-        });
+        }
       }
 
-      console.log(cloudinaryTab);
+      // !!!  await dans une boucle forEach() NE FONCTIONNE PAS !!!
+      //   pictureTab.forEach(async (file) => {
+      //     cloudinaryTab.push(
+      //       await cloudinary.uploader.upload(
+      //         convertToBase64(file),
+      //         (options = { folder: folder })
+      //       )
+      //     );
+      //     console.log("dans la boucle : ", cloudinaryTab);  // dans la boucle : [blablabla]  (ça marche)
+      //   });
+      // }
+      // console.log("boucle finie : ", cloudinaryTab); // boucle finie : [] s'affiche AVANT  'dnas la boucle' !!!
+      //
+
       // sauvegarde de l'annonce
       newOffer.product_name = title;
       newOffer.product_description = description;

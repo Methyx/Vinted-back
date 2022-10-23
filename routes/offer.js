@@ -158,7 +158,7 @@ router.put("/offer/modify", isAuthenticated, async (req, res) => {
       return res.status(400).json({ message: "offer not found" });
     }
     // verifier que l'offre lui appartient
-    if (req.user.token !== offer.owner.token) {
+    if (req.user._id !== offer.owner._id) {
       return res.status(401).json({ message: "unauthorized" });
     }
     // traitement des paramètres à modifier

@@ -8,7 +8,7 @@ const isAuthenticated = async (req, res, next) => {
     }
     const tokenSent = tokenRaw.replace("Bearer ", "");
     const userFound = await User.findOne({ token: tokenSent }).select(
-      "account token"
+      "account"
     );
     if (userFound === null) {
       return res.status(401).json({ message: "unauthorized" });

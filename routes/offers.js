@@ -48,13 +48,6 @@ router.get("/offers", async (req, res) => {
       }
     }
     // construction de la requete SORT
-    if (
-      !nbOffersPerPage ||
-      !Number(nbOffersPerPage) ||
-      Number(nbOffersPerPage) < 1
-    ) {
-      nbOffersPerPage = 5;
-    }
     const requestSort = {};
     if (sort === "price-desc") {
       requestSort.product_price = "desc";
@@ -64,16 +57,24 @@ router.get("/offers", async (req, res) => {
       return res.status(400).json({ message: "sort parameter is not correct" });
     }
     // construction de la requete SKIP et LIMIT
+    let nbOffers = 10;
+    if (
+      nbOffersPerPage &&
+      Number(nbOffersPerPage) &&
+      Number(nbOffersPerPage) > 0
+    ) {
+      nbOffers = nbOffersPerPage;
+    }
     let nbToSkip = 0;
     if (Number(page) > 1) {
-      nbToSkip = (page - 1) * nbOffersPerPage;
+      nbToSkip = (page - 1) * nbOffers;
     }
 
     // envoi de la requete à la BDD
     const results = await Offer.find(requestFind)
       .sort(requestSort)
       .skip(nbToSkip)
-      .limit(nbOffersPerPage)
+      .limit(nbOffers)
       // .select("product_name product_description product_price owner")
       .populate("owner", "account _id");
     // reponse au client

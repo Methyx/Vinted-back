@@ -1,3 +1,4 @@
+const { request } = require("express");
 const express = require("express");
 const router = express.Router();
 
@@ -10,9 +11,15 @@ router.get("/offers", async (req, res) => {
     // construction de la requete dans FIND pour les mots clés
     const requestFind = {};
     if (title) {
-      requestFind.product_name = new RegExp(title, "i");
+      // title est recherché sur "product_name" OU "product_description"
+      requestFind.$or = [
+        { product_name: new RegExp(title, "i") },
+        { product_description: new RegExp(title, "i") },
+      ];
+      // requestFind.product_name = new RegExp(title, "i");
     }
     if (description) {
+      // description est recherché UNIQUEMENT dans "product_description"
       requestFind.product_description = new RegExp(description, "i");
     }
     // construction de la requete dans FIND pour les prix

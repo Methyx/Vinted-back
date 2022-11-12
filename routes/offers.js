@@ -5,9 +5,17 @@ const router = express.Router();
 const Offer = require("../models/Offer");
 
 router.get("/offers", async (req, res) => {
-  const nbOffersPerPage = 5; // fixation en dur pour le moment
+  // const nbOffersPerPage = 5; // fixation en dur pour le moment
   try {
-    const { title, description, priceMin, priceMax, sort, page } = req.query;
+    const {
+      title,
+      description,
+      priceMin,
+      priceMax,
+      sort,
+      page,
+      nbOffersPerPage,
+    } = req.query;
     // construction de la requete dans FIND pour les mots clés
     const requestFind = {};
     if (title) {
@@ -40,6 +48,13 @@ router.get("/offers", async (req, res) => {
       }
     }
     // construction de la requete SORT
+    if (
+      !nbOffersPerPage ||
+      !Number(nbOffersPerPage) ||
+      Number(nbOffersPerPage) < 1
+    ) {
+      nbOffersPerPage = 5;
+    }
     const requestSort = {};
     if (sort === "price-desc") {
       requestSort.product_price = "desc";
@@ -49,17 +64,16 @@ router.get("/offers", async (req, res) => {
       return res.status(400).json({ message: "sort parameter is not correct" });
     }
     // construction de la requete SKIP et LIMIT
-    const nbToLimit = nbOffersPerPage;
     let nbToSkip = 0;
     if (Number(page) > 1) {
-      nbToSkip = (page - 1) * nbToLimit;
+      nbToSkip = (page - 1) * nbOffersPerPage;
     }
 
     // envoi de la requete à la BDD
     const results = await Offer.find(requestFind)
       .sort(requestSort)
       .skip(nbToSkip)
-      .limit(nbToLimit)
+      .limit(nbOffersPerPage)
       // .select("product_name product_description product_price owner")
       .populate("owner", "account _id");
     // reponse au client

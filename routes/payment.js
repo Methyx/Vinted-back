@@ -31,7 +31,7 @@ router.post("/payment", isAuthenticated, async (req, res) => {
 
     // realisation du paiment
     const response = await stripe.charges.create({
-      amount: globalAmount.toFixed(2) * 100,
+      amount: Math.round(globalAmount * 100),
       currency: "eur",
       description: offer.product_name,
       source: stripeToken,

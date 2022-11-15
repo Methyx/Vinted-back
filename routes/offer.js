@@ -25,7 +25,7 @@ router.post(
       const { title, description, price, condition, city, brand, size, color } =
         req.body;
       const pictureUser = req.files?.picture; // conditonnal chaining : ne plante pas si la clé req.files est 'null'
-      // console.log(Array.isArray(pictureUser));
+      // console.log("files recus : ", pictureUser);
       // exclusions
       if (!title || typeof title !== "string" || title.length > 50) {
         return res.status(400).json({ message: "title is not correct" });
@@ -52,6 +52,7 @@ router.post(
         } else {
           pictureTab = pictureUser;
         }
+        console.log("tableau envoyé en BDD : ", pictureTab);
         // on charge chaque image dans Cloudinary, dans un repertoire dédié à l'offre
         const folder = "/vinted/offers/" + newOffer._id;
 
